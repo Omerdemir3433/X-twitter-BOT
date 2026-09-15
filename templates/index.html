@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>X Otomatik Paylaşıcı</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #131822;
+    --border: #232b3a;
+    --text: #e6edf7;
+    --muted: #8b98a8;
+    --blue: #1d9bf0;
+    --blue-2: #1a8cd8;
+    --green: #00ba7c;
+    --green-2: #00a26b;
+    --red: #f4212e;
+    --amber: #ffd400;
+    --radius: 14px;
+    --shadow: 0 8px 28px rgba(0, 0, 0, .45);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  a { color: var(--blue); text-decoration: none; }
+
+  .ustbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11, 14, 20, .85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+  .ustbar .ic {
+    max-width: 860px; margin: 0 auto; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .marka { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo {
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 10px;
+    background: linear-gradient(135deg, #1d9bf0, #7856ff);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 19px; color: #fff;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset;
+  }
+  .marka h1 { margin: 0; font-size: 17px; line-height: 1.2; white-space: nowrap; }
+  .marka small { color: var(--muted); font-size: 12px; }
+
+  .kapsayici { max-width: 860px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .kart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+  .kart-baslik {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .adim {
+    width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .kart-baslik h2 { margin: 0; font-size: 16px; font-weight: 600; }
+
+  .satir { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+  .btn {
+    border: none; border-radius: 10px;
+    padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+    color: #fff; transition: transform .08s ease, box-shadow .2s ease, opacity .2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-mavi { background: linear-gradient(135deg, var(--blue), var(--blue-2)); box-shadow: 0 4px 14px rgba(29,155,240,.35); }
+  .btn-mavi:not(:disabled):hover { box-shadow: 0 6px 18px rgba(29,155,240,.5); }
+  .btn-yesil { background: linear-gradient(135deg, var(--green), var(--green-2)); box-shadow: 0 4px 14px rgba(0,186,124,.35); }
+  .btn-yesil:not(:disabled):hover { box-shadow: 0 6px 18px rgba(0,186,124,.5); }
+  .btn-turuncu { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .btn-kirmizi { background: linear-gradient(135deg, var(--red), #c20d18); }
+  .btn-gri { background: #2a3448; color: var(--muted); }
+  .btn-gri:not(:disabled):hover { color: var(--text); }
+
+  .rozet {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .rozet-yesil { background: rgba(0,186,124,.14); color: var(--green); border-color: rgba(0,186,124,.4); }
+  .rozet-kirmizi { background: rgba(244,33,46,.12); color: var(--red); border-color: rgba(244,33,46,.4); }
+  .rozet-gri { background: rgba(139,152,168,.12); color: var(--muted); border-color: var(--border); }
+  .rozet-mavi { background: rgba(29,155,240,.12); color: var(--blue); border-color: rgba(29,155,240,.4); }
+
+  .aciklama { color: var(--muted); font-size: 13px; }
+
+  .ili { margin-top: 10px; min-height: 18px; font-size: 13px; color: var(--muted); word-break: break-word; }
+
+  .alan { background: #0b0f16; border: 1px solid var(--border); border-radius: 10px; color: var(--text); padding: 10px 12px; font-size: 14px; outline: none; width: 100%; }
+  .alan:focus { border-color: var(--blue); }
+  .gecikme-grup { display: flex; align-items: center; gap: 0; }
+  .gecikme-grup .btn-deg { width: 38px; height: 42px; background: #1b2434; color: var(--text); border: 1px solid var(--border); font-size: 18px; cursor: pointer; }
+  .gecikme-grup .btn-deg:hover { background: #232f45; }
+  .gecikme-grup .btn-deg.eks { border-radius: 10px 0 0 10px; }
+  .gecikme-grup .btn-deg.art { border-radius: 0 10px 10px 0; }
+  .gecikme-grup .alan { border-radius: 0; width: 110px; text-align: center; border-left: none; border-right: none; }
+
+  .istatistikler { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .istat {
+    background: #0b0f16; border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px; text-align: center;
+  }
+  .istat .sayi { font-size: 26px; font-weight: 700; color: var(--text); }
+  .istat .etiket { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .istat.basarili .sayi { color: var(--green); }
+  .istat.hata .sayi { color: var(--red); }
+  .istat.kalan .sayi { color: var(--blue); }
+  @media (max-width: 560px) { .istatistikler { grid-template-columns: repeat(2, 1fr); } }
+
+  .cubuk { background: #1b2434; border-radius: 12px; height: 14px; overflow: hidden; margin-bottom: 14px; }
+  .cubuk-dolgu {
+    height: 100%; border-radius: 12px; width: 0%;
+    background: linear-gradient(90deg, var(--blue), #54b6f5);
+    transition: width .5s ease;
+  }
+  .cubuk-dolgu.tamam { background: linear-gradient(90deg, var(--green), #3ddc9a); }
+  .cubuk-dolgu.hata-var { background: linear-gradient(90deg, var(--amber), #f5b354); }
+
+  .durum-mesaj { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+
+  .bilgi-satiri { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+  .bilgi-satiri b { color: var(--text); font-weight: 600; }
+
+  .liste-alan { max-height: 460px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; padding: 10px; background: #0b0f16; }
+  .liste-alan::-webkit-scrollbar { width: 8px; }
+  .liste-alan::-webkit-scrollbar-thumb { background: #232f45; border-radius: 8px; }
+
+  .tw {
+    display: flex; gap: 12px; padding: 10px 12px; margin-bottom: 6px;
+    border-radius: 10px; border: 1px solid transparent; background: transparent;
+  }
+  .tw:hover { background: rgba(255,255,255,.02); }
+  .tw.ok { border-left: 3px solid var(--green); }
+  .tw.hata { border-left: 3px solid var(--red); background: rgba(244,33,46,.05); }
+  .tw.sira { border-left: 3px solid var(--blue); background: rgba(29,155,240,.08); }
+  .tw.uzun { border-left-style: dashed; }
+  .tw-num { flex: 0 0 30px; font-size: 12px; color: var(--muted); padding-top: 3px; }
+  .tw-icerik { flex: 1; min-width: 0; }
+  .tw-metin { word-break: break-word; font-size: 14px; }
+  .tw-hata { margin-top: 6px; font-size: 12px; color: var(--red); background: rgba(244,33,46,.08); padding: 5px 9px; border-radius: 7px; display: inline-block; }
+  .tw-ikon { flex: 0 0 22px; font-size: 16px; text-align: center; }
+
+  .bos-durum { color: var(--muted); padding: 20px; text-align: center; font-size: 14px; }
+
+  .toast-alan { position: fixed; bottom: 18px; right: 18px; z-index: 1050; display: flex; flex-direction: column; gap: 8px; max-width: 340px; }
+  .toast {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;
+    box-shadow: 0 8px 30px rgba(0,0,0,.55); animation: gel .2s ease;
+  }
+  .toast .nokta { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; margin-top: 4px; }
+  .toast-basarili .nokta { background: var(--green); }
+  .toast-hata .nokta { background: var(--red); }
+  .toast-uyari .nokta { background: var(--amber); }
+  @keyframes gel { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .alt { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+  @media (max-width: 520px) {
+    .kart { padding: 16px; }
+    .marka small { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ustbar">
+  <div class="ic">
+    <div class="marka">
+      <div class="logo">X</div>
+      <div>
+        <h1>X Otomatik Paylaşıcı</h1>
+        <small>API yok · Gerçek Chrome · Liste ile otomatik paylaşım</small>
+      </div>
+    </div>
+    <span id="hesapDurum" class="rozet rozet-gri">Bağlı değil</span>
+  </div>
+</div>
+
+<div class="kapsayici">
+
+  <div class="kart">
+    <div class="kart-baslik"><div class="adim">1</div><h2>Hesap Bağlama</h2></div>
+    <div class="aciklama" style="margin-bottom:14px">Açılan Chrome penceresinde X hesabınıza ilk kez giriş yaparsınız. Oturum kaydedilir, bir daha giriş sormaz. Gerçek Chrome + robot izleri gizli.</div>
+    <div class="satir">
+      <button id="baglaBtn" class="btn btn-mavi" onclick="bagla()">Hesap Bağla</button>
+      <button id="kesBtn" class="btn btn-gri" onclick="kes()" style="display:none">Bağlantıyı Kes</button>
+      <span id="hesapDurum2" class="rozet rozet-gri">Bağlı değil</span>
+    </div>
+    <div id="baglantiMesaj" class="ili"></div>
+  </div>
+
+  <div class="kart">
+    <div class="kart-baslik"><div class="adim">2</div><h2>Liste Yükleme</h2></div>
+    <div class="satir">
+      <input id="dosyaInput" type="file" accept=".txt,.json" class="alan" style="max-width:360px">
+      <button id="yukleBtn" class="btn btn-mavi" onclick="yukle()">Yükle</button>
+    </div>
+    <div id="dosyaAdi" class="ili"></div>
+    <div id="yukleUyari" class="ili" style="color:var(--amber)"></div>
+  </div>
+
+  <div class="kart">
+    <div class="kart-baslik"><div class="adim">3</div><h2>Paylaşım Ayarı ve Kontroller</h2></div>
+    <div class="satir" style="margin-bottom:16px">
+      <span class="aciklama">Her tweet kaç dakika arayla?</span>
+      <div class="gecikme-grup">
+        <button class="btn-deg eks" onclick="gecikmeDeg(-0.5)">−</button>
+        <input id="gecikmeInput" type="number" min="0.1" step="0.5" value="2" class="alan">
+        <button class="btn-deg art" onclick="gecikmeDeg(0.5)">+</button>
+      </div>
+      <span class="aciklama">dakika <span style="opacity:.6">(±%40 rastgele aralık)</span></span>
+    </div>
+    <div class="satir">
+      <button id="baslaBtn" class="btn btn-yesil" onclick="basla()">▶ Başlat</button>
+      <button id="duraklatBtn" class="btn btn-turuncu" onclick="duraklat()" disabled>⏸ Duraklat</button>
+      <button id="durdurBtn" class="btn btn-kirmizi" onclick="durdur()" disabled>⏹ Durdur</button>
+    </div>
+  </div>
+
+  <div class="kart">
+    <div class="kart-baslik"><div class="adim">4</div><h2>Canlı İlerleme</h2></div>
+    <div class="istatistikler">
+      <div class="istat"><div id="istToplam" class="sayi">0</div><div class="etiket">Toplam</div></div>
+      <div class="istat basarili"><div id="istBasarili" class="sayi">0</div><div class="etiket">Paylaşılan</div></div>
+      <div class="istat hata"><div id="istHata" class="sayi">0</div><div class="etiket">Hata</div></div>
+      <div class="istat kalan"><div id="istKalan" class="sayi">0</div><div class="etiket">Kalan</div></div>
+    </div>
+    <div class="cubuk"><div id="ilerlemeBar" class="cubuk-dolgu"></div></div>
+    <div id="durumMesaj" class="durum-mesaj" style="color:var(--blue)">Hazır</div>
+    <div class="bilgi-satiri">
+      <span>Toplam: <b id="ilerlemeSayi">0 / 0</b></span>
+      <span>Yüzde: <b id="ilerlemeYuzde">%0</b></span>
+      <span>Geçen: <b id="gecenSure">–</b></span>
+    </div>
+    <div class="bilgi-satiri" style="margin-top:8px">
+      <span>Son paylaşılan: <b id="sonTweet">–</b></span>
+    </div>
+    <div class="bilgi-satiri">
+      <span>Sıradaki: <b id="siradakiTweet">–</b></span>
+    </div>
+  </div>
+
+  <div class="kart">
+    <div class="kart-baslik"><div class="adim">5</div><h2>Tweet Listesi</h2><span id="listeOzet" style="margin-left:auto" class="aciklama"></span></div>
+    <div id="tweetListesi" class="liste-alan"></div>
+  </div>
+
+  <div class="alt">Hata alan tweetler otomatik olarak kırmızı işaretlenir. Gecikme ve limitler X kurallarına göre kullanılmalıdır.</div>
+</div>
+
+<div id="toastAlan" class="toast-alan"></div>
+
+<script>
+const MAX = 280;
+let durum = null;
+let baslaZamani = null;
+let sonHataSayisi = null;
+
+function $id(id) { return document.getElementById(id); }
+
+function toast(mesaj, tip) {
+  tip = tip || 'uyari';
+  const sinif = tip === 'danger' ? 'toast-hata' : (tip === 'success' ? 'toast-basarili' : 'toast-uyari');
+  const el = document.createElement('div');
+  el.className = 'toast ' + sinif;
+  el.innerHTML = '<span class="nokta"></span><div>' + mesaj + '</div>';
+  $id('toastAlan').appendChild(el);
+  setTimeout(function () { el.remove(); }, 6000);
+}
+
+function formatSure(sn) {
+  const s = parseInt(sn || 0, 10);
+  const saat = Math.floor(s / 3600);
+  const dk = Math.floor((s % 3600) / 60);
+  const snn = s % 60;
+  const dd = String(dk).padStart(2, '0');
+  const ss = String(snn).padStart(2, '0');
+  return saat > 0 ? (saat + ':' + dd + ':' + ss) : (dd + ':' + ss);
+}
+
+async function postJSON(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
+  });
+  return res.json();
+}
+
+async function bagla() {
+  $id('baglaBtn').disabled = true;
+  $id('baglaBtn').innerHTML = '⏳ Açılıyor...';
+  const r = await (await fetch('/api/bagla', { method: 'POST' })).json();
+  toast(r.mesaj, 'success');
+  setTimeout(function () {
+    $id('baglaBtn').disabled = false;
+    $id('baglaBtn').innerHTML = 'Hesap Bağla';
+  }, 2000);
+}
+
+async function kes() {
+  await fetch('/api/kes', { method: 'POST' });
+  const r = await fetch('/api/durum');
+  durumuUygula(await r.json());
+  toast('Bağlantı kesildi. Oturum verileri profilde saklı kaldı.', 'danger');
+}
+
+function gecikmeDeg(adim) {
+  const i = $id('gecikmeInput');
+  let v = parseFloat(i.value || 2);
+  v = Math.round((v + adim) * 10) / 10;
+  i.value = Math.max(0.1, Math.min(600, v));
+}
+
+async function yukle() {
+  const input = $id('dosyaInput');
+  if (!input.files.length) { toast('Önce bir TXT veya JSON dosyası seçin', 'danger'); return; }
+  const fd = new FormData();
+  fd.append('dosya', input.files[0]);
+  const r = await (await fetch('/api/yukle', { method: 'POST', body: fd })).json();
+  if (r.ok) {
+    toast(r.adet + ' tweet yüklendi', 'success');
+    $id('dosyaAdi').textContent = 'Yüklenen: ' + r.adet + ' tweet — ' + input.files[0].name;
+    if (r.uzunlar > 0) {
+      $id('yukleUyari').textContent = '⚠️ ' + r.uzunlar + ' tweet ' + MAX + ' karakteri aşıyor (Premium gerekli, Free\'da hata verir).';
+    } else {
+      $id('yukleUyari').textContent = '';
+    }
+  } else {
+    toast(r.hata, 'danger');
+  }
+}
+
+async function basla() {
+  const gecikme = parseFloat($id('gecikmeInput').value);
+  const r = await postJSON('/api/basla', { gecikme: gecikme });
+  if (!r.ok) { toast(r.hata, 'danger'); return; }
+  toast(r.mesaj, 'success');
+  baslaZamani = null;
+}
+
+async function duraklat() {
+  await fetch('/api/duraklat', { method: 'POST' });
+}
+
+async function durdur() {
+  await fetch('/api/durdur', { method: 'POST' });
+  toast('Durduruluyor...', 'danger');
+}
+
+function gorsel(t, i) {
+  const div = document.createElement('div');
+  div.className = 'tw';
+  if (t.durum === 'paylaşıldı') div.className += ' ok';
+  else if (t.durum === 'hata') div.className += ' hata';
+  else if (t.durum === 'sırada') div.className += ' sira';
+  else if (t.uzun) div.className += ' uzun';
+
+  const num = document.createElement('span');
+  num.className = 'tw-num';
+  num.textContent = (i + 1) + '.';
+
+  const ikon = document.createElement('span');
+  ikon.className = 'tw-ikon';
+  if (t.durum === 'paylaşıldı') ikon.textContent = '✅';
+  else if (t.durum === 'hata') ikon.textContent = '❌';
+  else if (t.durum === 'sırada') ikon.textContent = '▶';
+  else if (t.durum === 'bekliyor' && t.uzun) ikon.textContent = '⚠️';
+  else ikon.textContent = '⏳';
+  ikon.title = t.durum;
+
+  const icerik = document.createElement('div');
+  icerik.className = 'tw-icerik';
+  const metin = document.createElement('div');
+  metin.className = 'tw-metin';
+  metin.textContent = t.text;
+  icerik.appendChild(metin);
+
+  if (t.durum === 'hata' && t.hata) {
+    const h = document.createElement('div');
+    h.className = 'tw-hata';
+    h.textContent = 'Hata: ' + t.hata + ' (2 deneme)';
+    icerik.appendChild(h);
+  } else if (t.durum === 'bekliyor' && t.uzun && t.durum !== 'sırada' && t.durum !== 'paylaşıldı') {
+    const h = document.createElement('div');
+    h.className = 'tw-hata';
+    h.textContent = 'Uyarı: ' + MAX + ' karakter sınırı aşılıyor (Premium gerekli).';
+    icerik.appendChild(h);
+  }
+
+  div.appendChild(num);
+  div.appendChild(ikon);
+  div.appendChild(icerik);
+  return div;
+}
+
+function durumuUygula(d) {
+  durum = d;
+  const p = d.paylasim;
+
+  const bagli = d.bagli;
+  const yazi = bagli ? '✓ ' + (d.kullanici || 'aktif_hesap') : 'Bağlı değil';
+  const sinif = bagli ? 'rozet-yesil' : 'rozet-gri';
+  $id('hesapDurum').textContent = yazi;
+  $id('hesapDurum').className = 'rozet ' + sinif;
+  $id('hesapDurum2').textContent = yazi;
+  $id('hesapDurum2').className = 'rozet ' + sinif;
+  $id('kesBtn').style.display = bagli ? '' : 'none';
+  $id('baglaBtn').style.display = bagli ? 'none' : '';
+  $id('baglantiMesaj').textContent = d.baglanti_mesaji || '';
+
+  $id('baslaBtn').disabled = !bagli || p.aktif || !p.toplam || p.bitti;
+  $id('baslaBtn').innerHTML = p.bitti ? '↻ Tekrar Başlat' : '▶ Başlat';
+  $id('duraklatBtn').disabled = !p.aktif;
+  $id('durdurBtn').disabled = !p.aktif;
+  $id('duraklatBtn').innerHTML = (p.aktif && p.durakladi) ? '▶ Devam Et' : '⏸ Duraklat';
+
+  const toplam = p.toplam;
+  const basarili = p.paylasilan;
+  const hata = p.hata_sayisi;
+  const kalan = Math.max(0, toplam - basarili - hata);
+  $id('istToplam').textContent = toplam;
+  $id('istBasarili').textContent = basarili;
+  $id('istHata').textContent = hata;
+  $id('istKalan').textContent = kalan;
+
+  $id('ilerlemeSayi').textContent = toplam ? (basarili + ' / ' + toplam) : '0 / 0';
+  $id('ilerlemeYuzde').textContent = '%' + p.yuzde;
+
+  const bar = $id('ilerlemeBar');
+  bar.style.width = p.yuzde + '%';
+  bar.className = 'cubuk-dolgu';
+  if (p.bitti && hata === 0) bar.className += ' tamam';
+  else if (hata > 0) bar.className += ' hata-var';
+
+  let mesaj = p.mesaj;
+  if (!p.aktif && !p.bitti && !p.durduruldu && toplam) mesaj = 'Paylaşım için bekleniyor';
+  const durumEl = $id('durumMesaj');
+  durumEl.textContent = mesaj;
+  durumEl.style.color = mesaj.includes('TAMAMLANDI') ? (hata > 0 ? '#f5b354' : 'var(--green)')
+    : (mesaj.includes('Durdur') ? 'var(--red)'
+    : (mesaj.includes('Hata') || hata > 0 ? '#f5b354' : 'var(--blue)'));
+
+  $id('sonTweet').textContent = p.son || '–';
+  $id('siradakiTweet').textContent = (p.aktif && p.siradaki) ? p.siradaki : '–';
+
+  if (p.aktif && baslaZamani === null) baslaZamani = Date.now();
+  if (!p.aktif) baslaZamani = null;
+  $id('gecenSure').textContent = baslaZamani ? formatSure((Date.now() - baslaZamani) / 1000) : '–';
+
+  $id('listeOzet').textContent = toplam ? (basarili + ' başarılı · ' + hata + ' hata') : '';
+
+  const liste = $id('tweetListesi');
+  liste.innerHTML = '';
+  if (p.tweetler.length) {
+    p.tweetler.forEach(function (t, i) {
+      const aktifSira = p.aktif && i === p.paylasilan && t.durum !== 'paylaşıldı';
+      const e = aktifSira ? { text: t.text, durum: 'sırada', uzun: t.uzun, hata: t.hata } : t;
+      liste.appendChild(gorsel(e, i));
+    });
+  } else {
+    const d = document.createElement('div');
+    d.className = 'bos-durum';
+    d.textContent = 'Henüz liste yüklenmedi — bir TXT veya JSON dosyası seçip Yükle\'ye basın.';
+    liste.appendChild(d);
+  }
+
+  if (p.bitti && !window.__bitisHatirlandi && toplam) {
+    window.__bitisHatirlandi = true;
+    if (hata > 0) toast('Tamamlandı — ' + basarili + ' paylaşıldı, ' + hata + ' hata', 'danger');
+    else toast('Tüm tweetler başarıyla paylaşıldı!', 'success');
+  }
+  if (!p.aktif && !p.bitti) window.__bitisHatirlandi = false;
+
+  if (sonHataSayisi !== null && hata > sonHataSayisi && p.aktif) {
+    const son = p.tweetler.filter(function (t) { return t.durum === 'hata' || t.durum === 'hata'; });
+    const hSon = p.tweetler[p.tweetler.length - 1];
+    let msg = 'Tweet gönderilemedi';
+    if (hSon && hSon.durum === 'hata' && hSon.hata) msg = 'Hata: ' + hSon.hata;
+    toast(msg, 'danger');
+  }
+  sonHataSayisi = hata;
+}
+
+setInterval(async function () {
+  try {
+    const r = await fetch('/api/durum');
+    durumuUygula(await r.json());
+  } catch (e) { }
+}, 1000);
+
+window.addEventListener('load', function () {
+  durumuUygula({
+    bagli: false, kullanici: '', baglanti_mesaji: '',
+    paylasim: {
+      aktif: false, durakladi: false, durduruldu: false, bitti: false,
+      toplam: 0, paylasilan: 0, hata_sayisi: 0, yuzde: 0,
+      siradaki: '', son: '', mesaj: 'Hazır', tweetler: []
+    }
+  });
+  fetch('/api/durum').then(function (r) { return r.json(); }).then(durumuUygula).catch(function () { });
+});
+</script>
+</body>
+</html>
